@@ -47,3 +47,14 @@ You can enable or disable starting Tailscale on boot from the app's settings men
 ## Debug Logging
 
 Debug logs are written to the `$SDCARD_PATH/.userdata/$PLATFORM/logs/` folder.
+
+## Acknowledgements
+
+- [MinUI](https://github.com/shauninman/MinUI) by [Shaun Inman](https://github.com/shauninman).
+- [minui-list](https://github.com/josegonzalez/minui-list) and [minui-presenter](https://github.com/josegonzalez/minui-presenter) by [Jose Diaz-Gonzalez](https://github.com/josegonzalez).
+- [NextUI](https://github.com/LoveRetro/NextUI) by [@ro8inmorgan](https://github.com/ro8inmorgan), [@frysee](https://github.com/frysee) and the rest of the NextUI contributors.
+- Also, thank you, [Jose Diaz-Gonzalez](https://github.com/josegonzalez), for your pak repositories, which this project is based on.
+
+## License
+
+This project is released under the MIT License. For more information, see the [LICENSE](LICENSE) file.
