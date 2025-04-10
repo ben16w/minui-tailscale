@@ -137,18 +137,6 @@ current_settings() {
     cat "$minui_list_file"
 }
 
-tailscale_get_authkey() {
-    authkeyfile="$TAILSCALE_AUTHKEY_FILE"
-
-    if [ ! -f "$authkeyfile" ] || [ ! -s "$authkeyfile" ]; then
-        return 1
-    fi
-    authkey="$(cat "$authkeyfile")"
-    rm -f "$authkeyfile"
-
-    echo "$authkey"
-}
-
 tailscale_login() {
     authkey="$1"
 
@@ -163,10 +151,29 @@ tailscale_start() {
     tailscaled --statedir="$statedir" --no-logs-no-support &
 }
 
+tailscale_get_authkey() {
+    authkeyfile="$TAILSCALE_AUTHKEY_FILE"
+
+    if [ ! -f "$authkeyfile" ] || [ ! -s "$authkeyfile" ]; then
+        return 1
+    fi
+    authkey="$(cat "$authkeyfile")"
+    rm -f "$authkeyfile"
+
+    echo "$authkey"
+}
+
 tailscale_is_logged_in() {
     if tailscale status | grep -qi -e "logged out" -e "failed"; then
         return 1
     fi
+}
+
+tailscale_get_ip_address() {
+    if ! ip_address="$(tailscale ip -1)"; then
+        return 1
+    fi
+    echo "$ip_address"
 }
 
 main_screen() {
@@ -181,7 +188,7 @@ main_screen() {
         jq --arg pid "$service_pid" '.settings[.settings | length] |= . + {"name": "PID", "options": [$pid], "selected": 0, "features": {"unselectable": true}}' "$minui_list_file" >"$minui_list_file.tmp"
         mv "$minui_list_file.tmp" "$minui_list_file"
 
-        ip_address="$(get_ip_address)"
+        ip_address="$(tailscale_get_ip_address)"
         if [ -n "$ip_address" ]; then
             jq --arg ip "$ip_address" '.settings[.settings | length] |= . + {"name": "Address", "options": [$ip], "selected": 0, "features": {"unselectable": true}}' "$minui_list_file" >"$minui_list_file.tmp"
             mv "$minui_list_file.tmp" "$minui_list_file"
