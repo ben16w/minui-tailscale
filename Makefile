@@ -6,7 +6,7 @@ PLATFORMS := miyoomini my282 rg35xxplus tg5040
 MINUI_LIST_VERSION := 0.11.3
 MINUI_PRESENTER_VERSION := 0.7.0
 JQ_VERSION := 1.7.1
-TAILSCALE_VERSION := 1.82.0
+TAILSCALE_VERSION := 1.94.1
 
 clean:
 	rm -f bin/*/minui-list* || true
