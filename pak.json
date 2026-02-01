@@ -1,6 +1,6 @@
 {
   "name": "Tailscale",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "TOOL",
   "description": "A Pak wrapping Tailscale, a secure and easy-to-use VPN.",
   "author": "ben16w",
