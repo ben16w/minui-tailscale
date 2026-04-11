@@ -24,10 +24,12 @@ HUMAN_READABLE_NAME="Tailscale VPN"
 LAUNCHES_SCRIPT="false"
 
 TAILSCALE_AUTHKEY_FILE="$SDCARD_PATH/authkey"
+TAILSCALE_LOGIN_SERVER_STATE_FILE="$USERDATA_PATH/$PAK_NAME/login_server.json"
 
 service_off() {
     killall "$SERVICE_NAME"
 }
+
 
 show_message() {
     message="$1"
@@ -119,6 +121,82 @@ get_service_pid() {
     fi
 }
 
+load_login_server_state() {
+    state_file="$TAILSCALE_LOGIN_SERVER_STATE_FILE"
+    if [ ! -f "$state_file" ]; then
+        return 1
+    fi
+    if ! jq -e 'type == "object"' "$state_file" >/dev/null 2>&1; then
+        rm -f "$state_file"
+        return 1
+    fi
+    jq -rM '.' "$state_file"
+}
+
+parse_login_server_from_settings() {
+    settings_json="$1"
+    login_server=$(printf "%s" "$settings_json" | jq -rM '
+        def trim: gsub("^\\s+|\\s+$"; "");
+        (.settings[2] // {}) as $login |
+        if ($login.selected // 0) == 1 then
+            ($login.input.login_server_url // "" | trim)
+        else
+            ""
+        end
+    ' 2>/dev/null)
+
+    if [ -z "$login_server" ]; then
+        return 1
+    fi
+
+    printf "%s\n" "$login_server"
+}
+
+save_login_server_state() {
+    settings_json="$1"
+    state_file="$TAILSCALE_LOGIN_SERVER_STATE_FILE"
+    tmp_file="${state_file}.tmp"
+
+    login_server_json=$(printf "%s" "$settings_json" | jq -c '
+        def trim: gsub("^\\s+|\\s+$"; "");
+        (.settings[2] // {}) as $login |
+        ($login.input.login_server_url // "" | trim) as $url |
+        if ($login.selected // 0) == 1 and ($url | length) > 0 then
+            {selected: 1, url: $url}
+        else
+            empty
+        end
+    ' 2>/dev/null)
+
+    if [ -n "$login_server_json" ]; then
+        printf "%s\n" "$login_server_json" >"$tmp_file"
+        mv "$tmp_file" "$state_file"
+    else
+        rm -f "$state_file"
+    fi
+}
+
+tailscale_get_login_server() {
+    settings_json="$1"
+
+    if [ -n "$settings_json" ]; then
+        if login_server_candidate="$(parse_login_server_from_settings "$settings_json")"; then
+            printf "%s\n" "$login_server_candidate"
+            return 0
+        fi
+    fi
+
+    if saved_state="$(load_login_server_state)"; then
+        login_server_url=$(printf "%s" "$saved_state" | jq -rM '(.url // "") | gsub("^\\s+|\\s+$"; "")' 2>/dev/null)
+        if [ -n "$login_server_url" ]; then
+            printf "%s\n" "$login_server_url"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
 current_settings() {
     minui_list_file="/tmp/${PAK_NAME}-settings.json"
     rm -f "$minui_list_file"
@@ -134,13 +212,38 @@ current_settings() {
         mv "$minui_list_file.tmp" "$minui_list_file"
     fi
 
+    saved_login_server="$(load_login_server_state)"
+    saved_login_server_url=""
+    saved_login_server_selected="0"
+    if [ -n "$saved_login_server" ]; then
+        saved_login_server_selected=$(printf "%s" "$saved_login_server" | jq -rM '.selected // 0')
+        saved_login_server_url=$(printf "%s" "$saved_login_server" | jq -rM '.url // ""')
+    fi
+
+    if [ -n "$saved_login_server_url" ]; then
+        jq --arg url "$saved_login_server_url" '.settings[2].input.login_server_url = $url' "$minui_list_file" >"$minui_list_file.tmp"
+        mv "$minui_list_file.tmp" "$minui_list_file"
+    fi
+
+    if [ "$saved_login_server_selected" = "1" ] && [ -n "$saved_login_server_url" ]; then
+        jq '.settings[2].selected = 1' "$minui_list_file" >"$minui_list_file.tmp"
+        mv "$minui_list_file.tmp" "$minui_list_file"
+    fi
+
     cat "$minui_list_file"
 }
 
 tailscale_login() {
     authkey="$1"
+    login_server="$2"
 
-    if ! tailscale up --authkey="$authkey" --hostname="minui" --accept-routes --accept-dns; then
+    tailscale_args="--authkey=$authkey --hostname=minui --accept-routes --accept-dns"
+    if [ -n "$login_server" ]; then
+        tailscale_args="$tailscale_args --login-server=$login_server"
+    fi
+
+    # shellcheck disable=SC2086
+    if ! tailscale up $tailscale_args; then
         return 1
     fi
 }
@@ -286,6 +389,15 @@ main() {
         old_start_on_boot="$(jq -rM '.settings[1].selected' "/tmp/${PAK_NAME}-old-settings.json")"
         start_on_boot="$(jq -rM '.settings[1].selected' "/tmp/${PAK_NAME}-new-settings.json")"
 
+        old_login_selection="$(jq -rM '.settings[2].selected // 0' "/tmp/${PAK_NAME}-old-settings.json")"
+        old_login_input="$(jq -rM '.settings[2].input.login_server_url // ""' "/tmp/${PAK_NAME}-old-settings.json")"
+        new_login_selection="$(jq -rM '.settings[2].selected // 0' "/tmp/${PAK_NAME}-new-settings.json")"
+        new_login_input="$(jq -rM '.settings[2].input.login_server_url // ""' "/tmp/${PAK_NAME}-new-settings.json")"
+
+        if [ "$old_login_selection" != "$new_login_selection" ] || [ "$old_login_input" != "$new_login_input" ]; then
+            save_login_server_state "$new_settings"
+        fi
+
         if [ "$old_enabled" != "$enabled" ]; then
             if [ "$enabled" = "1" ]; then
                 show_message "Starting $HUMAN_READABLE_NAME." 2
@@ -306,7 +418,11 @@ main() {
                         service_off
                         continue
                     fi
-                    if ! tailscale_login "$authkey"; then
+
+                    login_server="$(tailscale_get_login_server "$new_settings")"
+                    save_login_server_state "$new_settings"
+
+                    if ! tailscale_login "$authkey" "$login_server"; then
                         show_message "Failed to login to $HUMAN_READABLE_NAME." 2
                         service_off
                         continue

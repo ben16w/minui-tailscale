@@ -44,6 +44,16 @@ You can start or stop Tailscale from the app's main menu. When Tailscale is runn
 
 You can enable or disable starting Tailscale on boot from the app's settings menu.
 
+### Custom login server
+
+If you are using a self-hosted [Headscale](https://headscale.net/) or Tailscale Enterprise control plane, you can point the pak at your custom login server:
+
+1. In the Tailscale pak menu, select **Login server**.
+2. Choose **Custom URL** and enter the HTTPS address of your Headscale or enterprise control plane (for example, `https://headscale.example.com`).
+3. Save your changes.
+
+The pak will remember the value you enter and will launch Tailscale with the `--login-server` flag whenever applicable. Switching the option back to **Default** clears the custom URL and reverts to Tailscale's public control plane.
+
 ## Debug Logging
 
 Debug logs are written to the `$SDCARD_PATH/.userdata/$PLATFORM/logs/` folder.

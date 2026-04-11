@@ -2,13 +2,36 @@
     "settings": [
         {
             "name": "Enable",
-            "options": ["false", "true"],
+            "options": [
+                "false",
+                "true"
+            ],
             "selected": 0
         },
         {
             "name": "Start on boot",
-            "options": ["false", "true"],
+            "options": [
+                "false",
+                "true"
+            ],
             "selected": 0
+        },
+        {
+            "name": "Login server",
+            "options": [
+                "Default",
+                "Custom URL"
+            ],
+            "selected": 0,
+            "features": {
+                "description": "Set to Custom URL to edit the login server domain",
+                "requires_input": true,
+                "input_label": "Login server URL",
+                "input_placeholder": "https://headscale.example.com",
+                "input_description": "Optionally provide a custom Headscale or Tailscale Enterprise login server URL.",
+                "input_key": "login_server_url",
+                "input_field_type": "text"
+            }
         }
     ]
 }
