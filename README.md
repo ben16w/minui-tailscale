@@ -55,6 +55,10 @@ Debug logs are written to the `$SDCARD_PATH/.userdata/$PLATFORM/logs/` folder.
 - [NextUI](https://github.com/LoveRetro/NextUI) by [@ro8inmorgan](https://github.com/ro8inmorgan), [@frysee](https://github.com/frysee) and the rest of the NextUI contributors.
 - Also, thank you, [Jose Diaz-Gonzalez](https://github.com/josegonzalez), for your pak repositories, which this project is based on.
 
+## Custom login server (Headscale)
+
+If you use a self-hosted Headscale or other custom login server, create a file named `loginserver` containing only the base URL of your login server (for example, `https://headscale.example.com`). Drop the file on the root of your SD card or directly into `$USERDATA_PATH/$PAK_NAME`. On launch, the pak cleans the value, moves it into `$USERDATA_PATH/$PAK_NAME/loginserver`, and automatically passes it to `tailscale up` using `--login-server`.
+
 ## License
 
 This project is released under the MIT License. For more information, see the [LICENSE](LICENSE) file.
