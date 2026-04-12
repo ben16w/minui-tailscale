@@ -26,8 +26,8 @@ HUMAN_READABLE_NAME="Tailscale VPN"
 LAUNCHES_SCRIPT="false"
 
 TAILSCALE_AUTHKEY_FILE="$SDCARD_PATH/authkey"
-TAILSCALE_LOGIN_SERVER_SOURCE_FILE="$SDCARD_PATH/loginserver"
-TAILSCALE_LOGIN_SERVER_FILE="$USERDATA_PATH/$PAK_NAME/loginserver"
+TAILSCALE_LOGIN_SERVER_FILE="$SDCARD_PATH/loginserver"
+TAILSCALE_LOGIN_SERVER_STORAGE_FILE="$USERDATA_PATH/$PAK_NAME/loginserver"
 
 service_off() {
     killall "$SERVICE_NAME"
@@ -157,7 +157,7 @@ tailscale_login() {
 }
 
 tailscale_get_login_server() {
-    loginserver_file="$TAILSCALE_LOGIN_SERVER_FILE"
+    loginserver_file="$TAILSCALE_LOGIN_SERVER_STORAGE_FILE"
 
     tailscale_sync_login_server
 
@@ -169,8 +169,8 @@ tailscale_get_login_server() {
 }
 
 tailscale_sync_login_server() {
-    source_file="$TAILSCALE_LOGIN_SERVER_SOURCE_FILE"
-    target_file="$TAILSCALE_LOGIN_SERVER_FILE"
+    source_file="$TAILSCALE_LOGIN_SERVER_FILE"
+    target_file="$TAILSCALE_LOGIN_SERVER_STORAGE_FILE"
 
     if [ ! -f "$source_file" ] || [ ! -s "$source_file" ]; then
         return 1
