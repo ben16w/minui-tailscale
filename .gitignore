@@ -1,6 +1,8 @@
 dist
 bin/*
 !bin/.gitkeep
+!bin/ca-certificates.crt
+
 res/fonts/*
 !res/fonts/.gitkeep
 

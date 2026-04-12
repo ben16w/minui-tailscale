@@ -19,6 +19,13 @@ fi
 
 export PATH="$PAK_DIR/bin/$architecture:$PAK_DIR/bin/$PLATFORM:$PAK_DIR/bin:$PATH"
 
+CA_BUNDLE_PATH="$PAK_DIR/bin/ca-certificates.crt"
+
+if [ -f "$CA_BUNDLE_PATH" ]; then
+    export SSL_CERT_FILE="$CA_BUNDLE_PATH"
+fi
+
+
 main() {
     "$PAK_DIR/bin/$architecture/tailscaled" --statedir="$USERDATA_PATH/$PAK_NAME/" --no-logs-no-support &
 }

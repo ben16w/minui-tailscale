@@ -53,6 +53,14 @@ Debug logs are written to the `$SDCARD_PATH/.userdata/$PLATFORM/logs/` folder.
 - [MinUI](https://github.com/shauninman/MinUI) by [Shaun Inman](https://github.com/shauninman).
 - [minui-list](https://github.com/josegonzalez/minui-list) and [minui-presenter](https://github.com/josegonzalez/minui-presenter) by [Jose Diaz-Gonzalez](https://github.com/josegonzalez).
 - [NextUI](https://github.com/LoveRetro/NextUI) by [@ro8inmorgan](https://github.com/ro8inmorgan), [@frysee](https://github.com/frysee) and the rest of the NextUI contributors.
+## Custom login server (Headscale)
+
+If you use a self-hosted Headscale or other custom login server, create a file named `loginserver` containing only the base URL of your login server (for example, `https://headscale.example.com`). Drop the file on the root of your SD card or directly into `$USERDATA_PATH/$PAK_NAME`. On launch, the pak cleans the value, moves it into `$USERDATA_PATH/$PAK_NAME/loginserver`, and automatically passes it to `tailscale up` using `--login-server`.
+
+> **TLS certificates**
+>
+> The pak ships with a CA bundle and automatically sets `SSL_CERT_FILE` so the bundled Tailscale binaries trust LetsEncrypt and other common roots out of the box. If you need to use a custom root, append it to `bin/ca-certificates.crt`.
+
 - Also, thank you, [Jose Diaz-Gonzalez](https://github.com/josegonzalez), for your pak repositories, which this project is based on.
 
 ## License
