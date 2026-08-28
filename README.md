@@ -1,4 +1,4 @@
-# minui-tailscale.pak
+# MinUI Tailscale
 
 A [MinUI](https://github.com/shauninman/MinUI) and [NextUI](https://github.com/LoveRetro/NextUI) pak wrapping [`Tailscale`](https://tailscale.com/), a secure and easy-to-use VPN.
 
