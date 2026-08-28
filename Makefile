@@ -14,12 +14,13 @@ clean:
 	rm -f bin/*/jq* || true
 	rm -f bin/*/tailscale* || true
 	rm -f bin/*/tailscaled* || true
+	rm -f ca-certificates.crt || true
 
 bump-version:
 	jq '.version = "$(RELEASE_VERSION)"' pak.json > pak.json.tmp
 	mv pak.json.tmp pak.json
 
-build: $(foreach platform,$(PLATFORMS),bin/$(platform)/minui-list bin/$(platform)/minui-presenter) $(foreach arch,$(ARCHITECTURES),bin/$(arch)/jq bin/$(arch)/tailscale bin/$(arch)/tailscaled)
+build: $(foreach platform,$(PLATFORMS),bin/$(platform)/minui-list bin/$(platform)/minui-presenter) $(foreach arch,$(ARCHITECTURES),bin/$(arch)/jq bin/$(arch)/tailscale bin/$(arch)/tailscaled) ca-certificates.crt
 	@echo "Build complete"
 
 bin/%/minui-list:
@@ -85,6 +86,9 @@ bin/%/tailscaled:
 	rm -f bin/$*/tailscale.tar.gz
 	chmod +x bin/$*/tailscaled
 	curl -sSL -o bin/$*/tailscaled.LICENSE "https://github.com/tailscale/tailscale/raw/refs/heads/main/LICENSE"
+
+ca-certificates.crt:
+	curl -f -o ca-certificates.crt -sSL https://curl.se/ca/cacert.pem
 
 release: build
 	mkdir -p dist

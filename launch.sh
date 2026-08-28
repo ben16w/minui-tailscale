@@ -179,7 +179,7 @@ tailscale_sync_login_server() {
     mkdir -p "$(dirname "$target_file")"
     tr -d '\r' <"$source_file" | tr -d '\n' >"$target_file.tmp"
 
-    if ! cmp -s "$target_file.tmp" "$target_file" >/dev/null 2>&1; then
+    if ! cmp -s "$target_file.tmp" "$target_file"; then
         mv "$target_file.tmp" "$target_file"
     else
         rm -f "$target_file.tmp"
