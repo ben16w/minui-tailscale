@@ -56,6 +56,10 @@ You can start or stop Tailscale from the app's main menu. When Tailscale is runn
 
 You can enable or disable starting Tailscale on boot from the app's settings menu.
 
+## Custom login server (Headscale)
+
+If you use a self-hosted Headscale or other custom login server, create a file named `loginserver` containing only the base URL of your login server (for example, `https://headscale.example.com`). Drop the file on the root of your SD card or directly into `$USERDATA_PATH/$PAK_NAME`. On launch, the pak cleans the value, moves it into `$USERDATA_PATH/$PAK_NAME/loginserver`, and automatically passes it to `tailscale up` using `--login-server`.
+
 ## Debug Logging
 
 Debug logs are written to the `$SDCARD_PATH/.userdata/$PLATFORM/logs/` folder.
@@ -66,10 +70,6 @@ Debug logs are written to the `$SDCARD_PATH/.userdata/$PLATFORM/logs/` folder.
 - [minui-list](https://github.com/josegonzalez/minui-list) and [minui-presenter](https://github.com/josegonzalez/minui-presenter) by [Jose Diaz-Gonzalez](https://github.com/josegonzalez).
 - [NextUI](https://github.com/LoveRetro/NextUI) by [@ro8inmorgan](https://github.com/ro8inmorgan), [@frysee](https://github.com/frysee) and the rest of the NextUI contributors.
 - Also, thank you, [Jose Diaz-Gonzalez](https://github.com/josegonzalez), for your pak repositories, which this project is based on.
-
-## Custom login server (Headscale)
-
-If you use a self-hosted Headscale or other custom login server, create a file named `loginserver` containing only the base URL of your login server (for example, `https://headscale.example.com`). Drop the file on the root of your SD card or directly into `$USERDATA_PATH/$PAK_NAME`. On launch, the pak cleans the value, moves it into `$USERDATA_PATH/$PAK_NAME/loginserver`, and automatically passes it to `tailscale up` using `--login-server`.
 
 ## License
 
