@@ -293,9 +293,10 @@ main() {
     chmod +x "$PAK_DIR/bin/$architecture/tailscaled"
     chmod +x "$PAK_DIR/bin/on-boot"
 
-    allowed_platforms="miyoomini my282 rg35xxplus tg5040"
+    allowed_platforms="h700 m17 magicmini miyoomini my282 my355 rg35xx rg35xxplus rgb30 tg5040 tg5050 trimuismart zero28"
     if ! echo "$allowed_platforms" | grep -q "$PLATFORM"; then
         show_message "$PLATFORM is not a supported platform." 2
+        return 1
     fi
 
     if [ "$PLATFORM" = "miyoomini" ]; then
