@@ -19,11 +19,15 @@ fi
 
 export PATH="$PAK_DIR/bin/$architecture:$PAK_DIR/bin/$PLATFORM:$PAK_DIR/bin:$PATH"
 
+export SSL_CERT_FILE="$PAK_DIR/ca-certificates.crt"
+
 SERVICE_NAME="tailscaled"
 HUMAN_READABLE_NAME="Tailscale VPN"
 LAUNCHES_SCRIPT="false"
 
 TAILSCALE_AUTHKEY_FILE="$SDCARD_PATH/authkey"
+TAILSCALE_LOGIN_SERVER_FILE="$SDCARD_PATH/loginserver"
+TAILSCALE_LOGIN_SERVER_STORAGE_FILE="$USERDATA_PATH/$PAK_NAME/loginserver"
 
 service_off() {
     killall "$SERVICE_NAME"
@@ -140,9 +144,50 @@ current_settings() {
 tailscale_login() {
     authkey="$1"
 
-    if ! tailscale up --authkey="$authkey" --hostname="minui" --accept-routes --accept-dns; then
+    tailscale_args="--authkey=$authkey --hostname=minui --accept-routes --accept-dns"
+
+    if login_server="$(tailscale_get_login_server)"; then
+        tailscale_args="$tailscale_args --login-server=$login_server"
+    fi
+
+    # shellcheck disable=SC2086
+    if ! tailscale up $tailscale_args; then
         return 1
     fi
+}
+
+tailscale_get_login_server() {
+    loginserver_file="$TAILSCALE_LOGIN_SERVER_STORAGE_FILE"
+
+    tailscale_sync_login_server
+
+    if [ ! -f "$loginserver_file" ] || [ ! -s "$loginserver_file" ]; then
+        return 1
+    fi
+
+    tr -d '\r' <"$loginserver_file" | tr -d '\n'
+}
+
+tailscale_sync_login_server() {
+    source_file="$TAILSCALE_LOGIN_SERVER_FILE"
+    target_file="$TAILSCALE_LOGIN_SERVER_STORAGE_FILE"
+
+    if [ ! -f "$source_file" ] || [ ! -s "$source_file" ]; then
+        return 1
+    fi
+
+    mkdir -p "$(dirname "$target_file")"
+    tr -d '\r' <"$source_file" | tr -d '\n' >"$target_file.tmp"
+
+    if ! cmp -s "$target_file.tmp" "$target_file"; then
+        mv "$target_file.tmp" "$target_file"
+    else
+        rm -f "$target_file.tmp"
+    fi
+
+    rm -f "$source_file"
+    sync
+    return 0
 }
 
 tailscale_start() {

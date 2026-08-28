@@ -3,5 +3,6 @@ bin/*
 !bin/.gitkeep
 res/fonts/*
 !res/fonts/.gitkeep
+ca-certificates.crt
 
 !bin/on-boot
